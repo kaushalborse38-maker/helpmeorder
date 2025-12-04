@@ -3,706 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spice Garden Digital Order - Simple</title>
+    <title>Raju da dhabba - Order App</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Load Poppins and Inter from Google Fonts for a professional look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lottie Player is now only necessary if the loading animation used Lottie, but we will remove it for cleaner code -->
+    <!-- Keeping the script tag just in case future edits use it, but the loading screen itself will use CSS -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    
     <style>
-        /* General Styles */
-        body { font-family: 'Inter', sans-serif; background-color: #f7f7f7; }
-        .main-card { max-width: 95%; min-height: 85vh; background-color: #ffffff; }
-        .dish-card {
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        /* Custom styles for mobile-first design */
+        body {
+            font-family: 'Inter', sans-serif; /* Default body font */
+            background-color: #f7f3e8; /* Light, dhabha-like background */
+            min-height: 100vh;
         }
-        .dish-card.active-order {
-            border-color: #22c55e; /* Green-500 */
-            background-color: #f0fdf4; /* Green-50 */
-            border-width: 2px;
-            transform: scale(1.02);
+        #app {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            background-color: #ffffff;
         }
-        .qty-button {
-            width: 30px;
-            height: 30px;
-            font-weight: bold;
+        
+        /* --- Gradients and Animations --- */
+        
+        /* Define pulse animation for CTA */
+        @keyframes pulse-once {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(49, 46, 129, 0.4); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(49, 46, 129, 0); }
+            100% { transform: scale(1); box-shadow: 0 8px 15px -3px rgb(0 0 0 / 0.2); }
         }
-        .section-title {
-            border-left: 4px solid #22c55e; /* Green accent */
-            padding-left: 1rem;
+
+        .cta-pulse {
+            animation: pulse-once 1.5s ease-out 1;
         }
-        .category-heading {
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
+
+        /* Define bounce-in animation for confirmation checkmark */
+        @keyframes bounce-in {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* Define spin animation for the loading spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #312e81; /* Primary Brand Color */
+            animation: spin 1s linear infinite;
+        }
+
+        /* Header Gradient Style */
+        .header-style {
+            background-color: #312e81; /* Deep Indigo - Primary Brand Color */
+            /* Rich Indigo Gradient */
+            background-image: linear-gradient(to right bottom, #4f46e5, #312e81);
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: #374151; /* gray-700 */
+            border-bottom-left-radius: 1rem;
+            border-bottom-right-radius: 1rem;
+            letter-spacing: 0.05em;
+            font-family: 'Poppins', sans-serif; /* Poppins for Header */
         }
-        /* Custom scrollbar for desktop category list */
-        #menu-list::-webkit-scrollbar {
-            width: 8px;
+        
+        /* Menu Item Fade In/Slide Up Animation */
+        @keyframes fadeInSlideUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
-        #menu-list::-webkit-scrollbar-thumb {
-            background-color: #a7f3d0; /* Green-200 */
-            border-radius: 4px;
+        .menu-item-animate {
+            animation: fadeInSlideUp 0.3s ease-out;
+            animation-fill-mode: both; /* Keep element visible after animation */
+        }
+        
+        /* --- General Component Styles --- */
+
+        .item-container:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .quantity-btn {
+            background-color: #f3f4f6;
+            transition: background-color 0.1s;
+        }
+        .quantity-btn:hover {
+            background-color: #e5e7eb;
+        }
+        .active-tab {
+            background-color: #312e81; /* Match header color */
+            color: white;
+            border-radius: 9999px;
+            box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.2);
         }
     </style>
 </head>
-<body class="p-2 md:p-8 flex items-center justify-center min-h-screen">
+<body class="p-0 m-0">
 
-    <div id="app" class="main-card w-full lg:w-3/5 p-4 md:p-10 rounded-xl shadow-2xl">
-        <header class="mb-8 text-center border-b pb-4 border-gray-100">
-            <h1 class="text-4xl font-extrabold text-gray-800 tracking-tight">
-                <span class="text-green-600">Spice</span> Garden Order 🇮🇳
-            </h1>
-            <p class="text-gray-500 mt-1">Digital Menu - Select Quantity Below</p>
-        </header>
-
-        <div id="menu-view">
-            <h2 class="section-title text-2xl font-semibold mb-6 text-gray-700">1. Adjust Quantities</h2>
-            
-            <div class="flex flex-col lg:flex-row">
-                <nav class="hidden lg:block lg:w-1/4 pr-4 sticky top-0 self-start">
-                    <ul class="space-y-2 text-sm font-medium">
-                        <li><a href="#starter-section" class="block p-2 rounded-lg text-gray-700 hover:bg-green-100 transition duration-150">Starter</a></li>
-                        <li><a href="#main-course-section" class="block p-2 rounded-lg text-gray-700 hover:bg-green-100 transition duration-150">Main Course</a></li>
-                        <li><a href="#breads-section" class="block p-2 rounded-lg text-gray-700 hover:bg-green-100 transition duration-150">Breads</a></li>
-                        <li><a href="#beverages-section" class="block p-2 rounded-lg text-gray-700 hover:bg-green-100 transition duration-150">Beverages</a></li>
-                        <li><a href="#sweets-section" class="block p-2 rounded-lg text-gray-700 hover:bg-green-100 transition duration-150">Sweets</a></li>
-                    </ul>
-                </nav>
-
-                <div id="menu-list" class="space-y-6 lg:w-3/4 lg:max-h-[60vh] lg:overflow-y-auto lg:pr-4">
-                    
-                    <div id="starter-section">
-                        <div class="category-heading text-lg">Starter</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                            <div id="dish-Samosa" data-name="Samosa (2 pcs)" data-price="80" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Samosa (2 pcs)</p>
-                                    <p class="text-xs text-gray-500">Fried pastry with spiced potato and peas.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹80</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Samosa', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Samosa" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Samosa', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Aloo-Tikki" data-name="Aloo Tikki Chaat" data-price="120" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Aloo Tikki Chaat</p>
-                                    <p class="text-xs text-gray-500">Potato patties with chutney & yogurt.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹120</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Aloo-Tikki', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Aloo-Tikki" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Aloo-Tikki', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Paneer-Pakora" data-name="Paneer Pakora" data-price="150" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Paneer Pakora</p>
-                                    <p class="text-xs text-gray-500">Deep-fried cottage cheese fritters.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹150</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Paneer-Pakora', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Paneer-Pakora" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Paneer-Pakora', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Veg-Spring-Roll" data-name="Veg Spring Roll" data-price="180" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Veg Spring Roll</p>
-                                    <p class="text-xs text-gray-500">Crispy rolls filled with vegetables.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹180</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Veg-Spring-Roll', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Veg-Spring-Roll" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Veg-Spring-Roll', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Chicken-Lollipop" data-name="Chicken Lollipop" data-price="250" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Chicken Lollipop</p>
-                                    <p class="text-xs text-gray-500">Spicy deep-fried chicken wings.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹250</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Chicken-Lollipop', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Chicken-Lollipop" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Chicken-Lollipop', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="main-course-section">
-                        <div class="category-heading text-lg">Main Course</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                            <div id="dish-Paneer-Tikka-Masala" data-name="Paneer Tikka Masala" data-price="280" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Paneer Tikka Masala</p>
-                                    <p class="text-xs text-gray-500">Creamy, authentic Indian curry.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹280</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Paneer-Tikka-Masala', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Paneer-Tikka-Masala" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Paneer-Tikka-Masala', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Chicken-Korma" data-name="Chicken Korma" data-price="350" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Chicken Korma</p>
-                                    <p class="text-xs text-gray-500">Mildly spiced, creamy chicken dish.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹350</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Chicken-Korma', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Chicken-Korma" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Chicken-Korma', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Veg-Biryani" data-name="Veg Biryani" data-price="320" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Veg Biryani</p>
-                                    <p class="text-xs text-gray-500">Aromatic rice dish.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹320</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Veg-Biryani', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Veg-Biryani" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Veg-Biryani', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Dal-Makhani" data-name="Dal Makhani" data-price="240" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Dal Makhani</p>
-                                    <p class="text-xs text-gray-500">Slow-cooked black lentils in butter and cream.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹240</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Dal-Makhani', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Dal-Makhani" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Dal-Makhani', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Mutton-Rogan-Josh" data-name="Mutton Rogan Josh" data-price="450" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Mutton Rogan Josh</p>
-                                    <p class="text-xs text-gray-500">Aromatic Kashmiri lamb curry.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹450</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Mutton-Rogan-Josh', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Mutton-Rogan-Josh" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Mutton-Rogan-Josh', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="breads-section">
-                        <div class="category-heading text-lg">Breads</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                            <div id="dish-Butter-Naan" data-name="Butter Naan" data-price="50" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Butter Naan</p>
-                                    <p class="text-xs text-gray-500">Soft Tandoori bread.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹50</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Butter-Naan', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Butter-Naan" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Butter-Naan', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Tandoori-Roti" data-name="Tandoori Roti" data-price="30" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Tandoori Roti</p>
-                                    <p class="text-xs text-gray-500">Whole wheat bread, baked in tandoor.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹30</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Tandoori-Roti', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Tandoori-Roti" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Tandoori-Roti', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Garlic-Naan" data-name="Garlic Naan" data-price="65" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Garlic Naan</p>
-                                    <p class="text-xs text-gray-500">Naan flavored with garlic.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹65</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Garlic-Naan', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Garlic-Naan" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Garlic-Naan', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Lachha-Paratha" data-name="Lachha Paratha" data-price="70" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Lachha Paratha</p>
-                                    <p class="text-xs text-gray-500">Multi-layered, flaky paratha.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹70</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Lachha-Paratha', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Lachha-Paratha" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Lachha-Paratha', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Missi-Roti" data-name="Missi Roti" data-price="55" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Missi Roti</p>
-                                    <p class="text-xs text-gray-500">Made with chickpea & wheat flour.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹55</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Missi-Roti', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Missi-Roti" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Missi-Roti', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="beverages-section">
-                        <div class="category-heading text-lg">Beverages</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                            <div id="dish-Masala-Soda" data-name="Masala Soda" data-price="60" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Masala Soda</p>
-                                    <p class="text-xs text-gray-500">Spiced Indian soda.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹60</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Masala-Soda', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Masala-Soda" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Masala-Soda', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Sweet-Lassi" data-name="Sweet Lassi" data-price="90" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Sweet Lassi</p>
-                                    <p class="text-xs text-gray-500">Traditional sweet yogurt drink.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹90</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Sweet-Lassi', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Sweet-Lassi" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Sweet-Lassi', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Salted-Lassi" data-name="Salted Lassi" data-price="80" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Salted Lassi</p>
-                                    <p class="text-xs text-gray-500">Savory yogurt drink.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹80</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Salted-Lassi', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Salted-Lassi" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Salted-Lassi', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Jal-Jeera" data-name="Jal Jeera" data-price="50" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Jal Jeera</p>
-                                    <p class="text-xs text-gray-500">Tangy and refreshing drink.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹50</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Jal-Jeera', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Jal-Jeera" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Jal-Jeera', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Fresh-Lime-Soda" data-name="Fresh Lime Soda" data-price="75" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Fresh Lime Soda</p>
-                                    <p class="text-xs text-gray-500">Sweet, salted, or mixed.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹75</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Fresh-Lime-Soda', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Fresh-Lime-Soda" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Fresh-Lime-Soda', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="sweets-section">
-                        <div class="category-heading text-lg">Sweets</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                            <div id="dish-Gulab-Jamun" data-name="Gulab Jamun (2 pcs)" data-price="120" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Gulab Jamun (2 pcs)</p>
-                                    <p class="text-xs text-gray-500">Sweet dumplings in syrup.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹120</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Gulab-Jamun', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Gulab-Jamun" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Gulab-Jamun', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Rasgulla" data-name="Rasgulla (2 pcs)" data-price="130" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Rasgulla (2 pcs)</p>
-                                    <p class="text-xs text-gray-500">Spongy cheese balls in syrup.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹130</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Rasgulla', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Rasgulla" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Rasgulla', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Kulfi" data-name="Kulfi (Malai)" data-price="150" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Kulfi (Malai)</p>
-                                    <p class="text-xs text-gray-500">Traditional frozen dairy dessert.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹150</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Kulfi', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Kulfi" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Kulfi', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Gajar-Ka-Halwa" data-name="Gajar Ka Halwa" data-price="160" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Gajar Ka Halwa</p>
-                                    <p class="text-xs text-gray-500">Carrot pudding cooked with milk & ghee.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹160</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Gajar-Ka-Halwa', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Gajar-Ka-Halwa" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Gajar-Ka-Halwa', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-
-                            <div id="dish-Jalebi" data-name="Jalebi" data-price="100" class="dish-card p-4 border border-gray-200 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p class="font-bold text-gray-800">Jalebi</p>
-                                    <p class="text-xs text-gray-500">Crispy, syrupy coil-shaped dessert.</p>
-                                    <p class="text-lg font-extrabold text-red-600 mt-2">₹100</p>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="changeQuantity('Jalebi', -1)" class="qty-button text-gray-700 border border-gray-400 rounded-full hover:bg-gray-100 disabled:opacity-30 disabled:cursor-default">-</button>
-                                    <span id="qty-Jalebi" class="w-6 text-center font-bold">0</span>
-                                    <button onclick="changeQuantity('Jalebi', 1)" class="qty-button bg-green-500 text-white rounded-full hover:bg-green-600">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-            
-            <div class="mt-10 pt-4 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div class="text-xl font-bold text-gray-700">
-                    Total Dishes Selected: <span id="total-items" class="text-green-600">0</span>
-                </div>
-                <button id="proceed-button" onclick="showForm()" class="w-full md:w-auto px-8 py-3 bg-red-500 text-white font-bold rounded-full shadow-lg transition hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Proceed to Details &rarr;
-                </button>
-            </div>
-        </div>
-
-        <div id="form-view" class="hidden">
-            <h2 class="section-title text-2xl font-semibold mb-6 text-gray-700">2. Confirm Details & Place Order</h2>
-            <form id="order-form" class="space-y-6">
-                <div>
-                    <p class="text-base font-medium text-gray-700 mb-2">Your Final Order:</p>
-                    <div id="order-summary-display" class="p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 font-medium space-y-2">
-                        </div>
-                </div>
-
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Your Name (Required)</label>
-                    <input type="text" id="name" name="name" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
-                </div>
-                <div>
-                    <label for="contact" class="block text-sm font-medium text-gray-700">Mobile Number (10 digits, Required)</label>
-                    <input type="tel" id="contact" name="contact" pattern="[0-9]{10}" maxlength="10" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
-                    <p class="text-xs text-gray-400 mt-1">For contact and order verification.</p>
-                </div>
-                <div>
-                    <label for="table" class="block text-sm font-medium text-gray-700">Table Number (Required)</label>
-                    <input type="text" id="table" name="table" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500">
-                </div>
-                
-                <div id="message-box" class="hidden p-4 text-sm rounded-lg font-medium" role="alert"></div>
-
-                <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-100 space-y-4 sm:space-y-0">
-                    <button type="button" onclick="showMenu()" class="w-full sm:w-auto px-6 py-2 text-gray-600 font-medium rounded-full hover:bg-gray-100 transition border border-gray-300">
-                        &larr; Back to Menu
-                    </button>
-                    <button type="submit" id="submit-button" class="w-full sm:w-auto px-8 py-3 bg-green-600 text-white font-bold rounded-full shadow-xl transition hover:bg-green-700 disabled:opacity-50 disabled:cursor-wait">
-                        Confirm & Place Order
-                    </button>
-                </div>
-            </form>
-        </div>
+    <div id="app" class="relative">
+        <!-- Application content will be injected here -->
     </div>
 
     <script>
-    // ************************************************
-    // ⚙️ N8N WEBHOOK CONFIGURATION 
-    // ************************************************
-    const N8N_WEBHOOK_URL = 'https://borsekaushal.app.n8n.cloud/webhook/Menu'; 
+        // --- Configuration ---
+        const WEBSCREEN_ID = 'app';
+        const WEBHOOK_URL = 'https://borsekaushal.app.n8n.cloud/webhook-test/Menu';
+        const HOTEL_NAME = 'Raju da dhabba';
 
-    let selectedItems = {}; 
-    const menuView = document.getElementById('menu-view');
-    const formView = document.getElementById('form-view');
-    const proceedButton = document.getElementById('proceed-button');
-    const totalItemsSpan = document.getElementById('total-items');
-    const orderSummaryDisplay = document.getElementById('order-summary-display');
-    const messageBox = document.getElementById('message-box');
+        // --- Mock Menu Data ---
+        const menu = {
+            Starter: [
+                { id: 101, name: "Paneer Tikka", price: 280, description: "Smoky cottage cheese cubes" },
+                { id: 102, name: "Crispy Corn", price: 220, description: "Fried corn kernels with spices" },
+                { id: 103, name: "Veg. Spring Rolls", price: 180, description: "Crispy veggie rolls" },
+            ],
+            Maincourse: [
+                { id: 201, name: "Dal Makhani", price: 350, description: "Creamy black lentil curry" },
+                { id: 202, name: "Shahi Paneer", price: 420, description: "Royal cottage cheese preparation" },
+                { id: 203, name: "Butter Naan", price: 70, description: "Leavened flatbread with butter" },
+                { id: 204, name: "Jeera Rice", price: 150, description: "Rice tempered with cumin" },
+            ],
+            Drinks: [
+                { id: 301, name: "Masala Chaas", price: 90, description: "Spiced buttermilk" },
+                { id: 302, name: "Fresh Lime Soda", price: 120, description: "Sweet/Salty refreshing drink" },
+                { id: 303, name: "Water Bottle", price: 40, description: "1 litre mineral water" },
+            ],
+            Sweet: [
+                { id: 401, name: "Gulab Jamun (2pcs)", price: 150, description: "Deep-fried milk solids in sugar syrup" },
+                { id: 402, name: "Gajar Halwa", price: 200, description: "Carrot pudding" },
+            ],
+        };
 
-    // --- Utility Functions ---
-    
-    function showMessage(message, type) {
-        messageBox.innerHTML = message;
-        messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
-        messageBox.classList.add(
-            type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        );
-    }
+        // --- Application State ---
+        let cart = {};
+        let currentCategory = 'Starter';
+        let customerDetails = {
+            name: '',
+            contact: '',
+            tableNumber: '',
+            instructions: ''
+        };
 
-    function clearMessage() {
-        messageBox.classList.add('hidden');
-        messageBox.innerHTML = '';
-    }
+        // --- Utility Functions ---
 
-    function calculateTotal() {
-        // Find all dish cards on the page
-        const dishCards = document.querySelectorAll('[id^="dish-"]');
-        let total = 0;
+        /**
+         * Renders the current screen content into the main application container.
+         * @param {string} contentHtml - The HTML content to display.
+         */
+        function renderScreen(contentHtml) {
+            const appElement = document.getElementById(WEBSCREEN_ID);
+            appElement.innerHTML = contentHtml;
+        }
 
-        dishCards.forEach(card => {
-            const id = card.id.replace('dish-', '');
-            if (selectedItems[id] && selectedItems[id].qty > 0) {
-                const price = parseFloat(card.getAttribute('data-price'));
-                total += selectedItems[id].qty * price;
+        /**
+         * Calculates the total price of all items in the cart.
+         * @returns {{total: number, items: Array}} - The total price and a list of ordered items.
+         */
+        function calculateTotal() {
+            let total = 0;
+            const orderedItems = [];
+
+            // Iterate through all categories
+            for (const category in menu) {
+                menu[category].forEach(item => {
+                    const quantity = cart[item.id] || 0;
+                    if (quantity > 0) {
+                        const itemTotal = item.price * quantity;
+                        total += itemTotal;
+                        orderedItems.push({
+                            itemId: item.id,
+                            name: item.name,
+                            price: item.price,
+                            quantity: quantity,
+                            subtotal: itemTotal
+                        });
+                    }
+                });
             }
-        });
-        return total;
-    }
-
-    function updateSelectionState() {
-        const itemCount = Object.values(selectedItems).reduce((sum, item) => sum + (item.qty > 0 ? 1 : 0), 0);
-        totalItemsSpan.textContent = itemCount;
-        proceedButton.disabled = itemCount === 0; 
-    }
-
-    function generateOrderSummary() {
-        const validItems = Object.keys(selectedItems)
-            .map(id => {
-                const dishElement = document.getElementById(`dish-${id}`);
-                const price = parseFloat(dishElement.getAttribute('data-price'));
-                return {
-                    ...selectedItems[id],
-                    price: price,
-                    subtotal: selectedItems[id].qty * price
-                };
-            })
-            .filter(item => item.qty > 0);
-
-        if (validItems.length === 0) {
-            return { text: "No items selected.", html: '<p>No items selected.</p>', total: '0' };
+            return { total, items: orderedItems };
         }
 
-        // Generate detailed HTML summary
-        let summaryHTML = validItems.map(item => `
-            <div class="flex justify-between">
-                <span class="text-gray-700">${item.qty} x ${item.name}</span>
-                <span class="text-red-600 font-extrabold">₹${item.subtotal.toFixed(0)}</span>
-            </div>
-        `).join('');
+        // --- Screen Implementations ---
 
-        const total = calculateTotal();
-        summaryHTML += `
-            <div class="border-t pt-2 mt-2 border-gray-200 flex justify-between font-bold text-lg">
-                <span>Total Bill:</span>
-                <span class="text-green-600">₹${total.toFixed(0)}</span>
-            </div>
-        `;
-        
-        // Return text for n8n payload and HTML for display
-        return {
-            text: validItems.map(item => `${item.qty} x ${item.name}`).join(', '),
-            html: summaryHTML,
-            total: total.toFixed(0)
-        };
-    }
-    
-    // --- Quantity Logic ---
-    
-    function changeQuantity(id, change) {
-        const dishElement = document.getElementById(`dish-${id}`);
-        const qtySpan = document.getElementById(`qty-${id}`);
-        
-        let currentQty = parseInt(qtySpan.textContent);
-        let newQty = currentQty + change;
-
-        if (newQty < 0) {
-            newQty = 0;
-        }
-        if (newQty > 99) { // Max limit
-            newQty = 99;
+        function showWelcomeScreen() {
+            const html = `
+                <div class="flex-grow flex flex-col justify-center items-center p-8 text-center bg-gray-50">
+                    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
+                        <!-- Icon updated to a more defined utensil icon -->
+                        <svg class="w-20 h-20 text-orange-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2 font-['Poppins']">
+                            ${HOTEL_NAME}
+                        </h1>
+                        <p class="text-gray-600 mb-8 italic">
+                            Authentic Indian Cuisine, Made with Love.
+                        </p>
+                        <button onclick="showMenuScreen()" 
+                                class="w-full py-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg transform transition duration-150 hover:scale-[1.02] active:scale-[0.98] font-['Poppins'] cta-pulse">
+                            Start Ordering
+                        </button>
+                    </div>
+                </div>
+            `;
+            renderScreen(html);
         }
 
-        // Update UI
-        qtySpan.textContent = newQty;
-        
-        // Store/update item data in state
-        if (newQty > 0) {
-            dishElement.classList.add('active-order');
-            selectedItems[id] = { 
-                qty: newQty, 
-                name: dishElement.getAttribute('data-name')
+        function showMenuScreen() {
+            // Apply animation-delay for staggered fade-in effect
+            const menuHtml = menu[currentCategory].map((item, index) => `
+                <div class="item-container flex justify-between items-center p-4 hover:bg-gray-50 transition duration-100 menu-item-animate" style="animation-delay: ${index * 0.05}s;">
+                    <div class="flex-1 min-w-0 pr-3">
+                        <p class="text-lg font-semibold text-gray-800 truncate">${item.name}</p>
+                        <p class="text-sm text-gray-500 truncate">${item.description}</p>
+                        <p class="text-base font-bold text-green-600">₹${item.price}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 border border-gray-300 rounded-full">
+                        <!-- Decrement Button -->
+                        <button onclick="updateQuantity(${item.id}, -1)" 
+                                class="quantity-btn w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold text-red-500 shadow-sm active:shadow-none">
+                            -
+                        </button>
+                        <!-- Quantity Display -->
+                        <span id="qty-${item.id}" class="w-6 text-center text-gray-800 font-medium text-sm">
+                            ${cart[item.id] || 0}
+                        </span>
+                        <!-- Increment Button -->
+                        <button onclick="updateQuantity(${item.id}, 1)" 
+                                class="quantity-btn w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold text-green-500 shadow-sm active:shadow-none">
+                            +
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const categoryTabs = Object.keys(menu).map(cat => `
+                <button onclick="changeCategory('${cat}')" 
+                        class="p-2 px-4 text-sm font-medium transition duration-150 whitespace-nowrap font-['Poppins'] ${currentCategory === cat ? 'active-tab' : 'text-gray-700 hover:bg-gray-100 rounded-full'}">
+                    ${cat}
+                </button>
+            `).join('');
+
+            const totalInfo = calculateTotal();
+            // Use Orange gradient for the CTA button in the menu footer
+            const doneButtonClasses = totalInfo.total > 0 ? 
+                'bg-orange-500 hover:bg-orange-600 shadow-md hover:shadow-lg' : 
+                'bg-gray-400 cursor-not-allowed shadow-none';
+
+            const html = `
+                <header class="sticky top-0 z-10 header-style p-4">
+                    <h2 class="text-2xl">${HOTEL_NAME} Menu</h2>
+                </header>
+
+                <!-- Category Tabs -->
+                <div class="sticky top-[4.5rem] z-10 bg-white shadow-md overflow-x-auto p-3 flex space-x-3">
+                    ${categoryTabs}
+                </div>
+
+                <!-- Menu List -->
+                <div class="flex-grow overflow-y-auto pb-20">
+                    ${menuHtml}
+                </div>
+
+                <!-- Cart Summary Footer -->
+                <footer class="sticky bottom-0 bg-white p-4 shadow-2xl border-t-2 border-gray-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-700 font-semibold">Order Total:</span>
+                        <span id="menu-total" class="text-2xl font-extrabold text-indigo-600 font-['Poppins']">
+                            ₹${totalInfo.total}
+                        </span>
+                    </div>
+                    <button id="done-ordering-btn" 
+                            onclick="if(calculateTotal().total > 0) showDetailsScreen()" 
+                            class="w-full py-3 text-white font-bold rounded-xl transform transition duration-150 font-['Poppins'] ${doneButtonClasses}">
+                        Done Ordering (${totalInfo.items.length} items)
+                    </button>
+                </footer>
+            `;
+            renderScreen(html);
+        }
+
+        function changeCategory(newCategory) {
+            currentCategory = newCategory;
+            showMenuScreen();
+        }
+
+        function updateQuantity(itemId, delta) {
+            const currentQty = cart[itemId] || 0;
+            const newQty = Math.max(0, currentQty + delta);
+            cart[itemId] = newQty;
+            
+            // Update the display for the specific item
+            const qtySpan = document.getElementById(`qty-${itemId}`);
+            if (qtySpan) {
+                qtySpan.textContent = newQty;
+            }
+
+            // Update the total and button status
+            const totalInfo = calculateTotal();
+            const totalSpan = document.getElementById('menu-total');
+            if (totalSpan) {
+                totalSpan.textContent = `₹${totalInfo.total}`;
+            }
+
+            const doneBtn = document.getElementById('done-ordering-btn');
+            if (doneBtn) {
+                const buttonColor = totalInfo.total > 0 ? 'bg-orange-500 hover:bg-orange-600 shadow-md hover:shadow-lg' : 'bg-gray-400 cursor-not-allowed shadow-none';
+                doneBtn.className = `w-full py-3 text-white font-bold rounded-xl transform transition duration-150 font-['Poppins'] ${buttonColor}`;
+                doneBtn.textContent = `Done Ordering (${totalInfo.items.length} items)`;
+            }
+        }
+
+        function showDetailsScreen() {
+            const totalInfo = calculateTotal();
+            const summaryHtml = totalInfo.items.map(item => `
+                <li class="flex justify-between text-base py-1 border-b border-dashed border-gray-200">
+                    <span class="font-medium text-gray-700">${item.name} <span class="text-sm text-indigo-500">(x${item.quantity})</span></span>
+                    <span class="font-semibold text-gray-900">₹${item.subtotal}</span>
+                </li>
+            `).join('');
+
+            const html = `
+                <header class="header-style p-4 flex items-center">
+                    <button onclick="showMenuScreen()" class="text-white mr-4 text-2xl p-1 rounded-full hover:bg-white/10 transition">
+                        &larr;
+                    </button>
+                    <h2 class="text-xl flex-grow text-left font-['Poppins']">Order Confirmation</h2>
+                </header>
+
+                <div class="p-5 flex-grow overflow-y-auto">
+                    <!-- Order Summary Card -->
+                    <div class="bg-white p-4 rounded-xl shadow-lg border-2 border-indigo-100 mb-6">
+                        <h3 class="text-xl font-bold text-indigo-700 mb-3 font-['Poppins']">Your Order Summary</h3>
+                        <ul class="space-y-1 mb-3">
+                            ${summaryHtml}
+                        </ul>
+                        <div class="flex justify-between items-center pt-3 border-t-2 border-indigo-200">
+                            <span class="text-lg font-bold text-gray-800 font-['Poppins']">Grand Total:</span>
+                            <span class="text-3xl font-extrabold text-green-600 font-['Poppins']">₹${totalInfo.total}</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Details Form -->
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 font-['Poppins']">Your Details</h3>
+                    <form id="detailsForm" class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name (Mandatory)</label>
+                            <input type="text" id="name" required placeholder="Enter your full name" value="${customerDetails.name}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 border" />
+                        </div>
+                        <div>
+                            <label for="contact" class="block text-sm font-medium text-gray-700">Contact Number (Mandatory)</label>
+                            <input type="tel" id="contact" required placeholder="10-digit mobile number" value="${customerDetails.contact}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 border" pattern="[0-9]{10,12}" title="Please enter a valid contact number"/>
+                        </div>
+                        <div>
+                            <label for="tableNumber" class="block text-sm font-medium text-gray-700">Table Number (Mandatory)</label>
+                            <input type="number" id="tableNumber" required placeholder="e.g., 5" value="${customerDetails.tableNumber}"
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 border" min="1" max="999" />
+                        </div>
+                        <div>
+                            <label for="instructions" class="block text-sm font-medium text-gray-700">Instructions for Kitchen (Optional)</label>
+                            <textarea id="instructions" placeholder="e.g., Make it extra spicy, No onion/garlic" 
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 border h-20">${customerDetails.instructions}</textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <footer class="sticky bottom-0 bg-white p-4 shadow-2xl border-t-2 border-gray-100">
+                    <button onclick="submitOrder()" 
+                            class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transform transition duration-150 hover:scale-[1.01] active:scale-[0.99] font-['Poppins']">
+                        Place Order & Pay Total: ₹${totalInfo.total}
+                    </button>
+                </footer>
+            `;
+            renderScreen(html);
+        }
+
+        async function submitOrder() {
+            const form = document.getElementById('detailsForm');
+            
+            // Basic form validation check
+            if (!form.checkValidity()) {
+                // Manually trigger validation messages
+                form.reportValidity();
+                return;
+            }
+
+            // Collect customer details
+            customerDetails = {
+                name: document.getElementById('name').value,
+                contact: document.getElementById('contact').value,
+                tableNumber: document.getElementById('tableNumber').value,
+                instructions: document.getElementById('instructions').value
             };
-        } else {
-            dishElement.classList.remove('active-order');
-            delete selectedItems[id];
+
+            const orderData = calculateTotal();
+
+            // Construct the payload for the webhook
+            const payload = {
+                hotelName: HOTEL_NAME,
+                timestamp: new Date().toISOString(),
+                customer: customerDetails,
+                order: orderData.items,
+                grandTotal: orderData.total
+            };
+
+            // Show clean CSS loading state (no Lottie player needed for this state)
+            document.getElementById(WEBSCREEN_ID).innerHTML = `
+                <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
+                    <div class="spinner mb-6"></div> <!-- Custom CSS Spinner -->
+                    <p class="text-xl font-semibold text-gray-700 mt-4 font-['Poppins']">Processing Order...</p>
+                    <p class="text-gray-500">Sending order data, please wait securely.</p>
+                </div>
+            `;
+            
+            let success = false;
+            let errorMessage = '';
+
+            try {
+                // 1. Initial attempt
+                const response = await fetchWithRetry(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }, 3); // 3 retries max
+
+                if (response.ok) {
+                    success = true;
+                } else {
+                    errorMessage = `Webhook failed with status: ${response.status} ${response.statusText}`;
+                    console.error(errorMessage);
+                }
+            } catch (error) {
+                errorMessage = `Network or fetch error: ${error.message}`;
+                console.error(errorMessage);
+            }
+
+            if (success) {
+                // PASS the table number to confirmation screen before resetting state
+                const confirmedTableNumber = customerDetails.tableNumber;
+                showConfirmationScreen(confirmedTableNumber);
+            } else {
+                showErrorScreen(errorMessage);
+            }
         }
 
-        updateSelectionState();
-        
-        // Disable minus button if quantity is zero
-        const minusButton = dishElement.querySelector('.qty-button');
-        if (minusButton) {
-            minusButton.disabled = newQty === 0;
-        }
-    }
-    
-    // --- View Switching ---
-
-    function showForm() {
-        const summary = generateOrderSummary();
-        orderSummaryDisplay.innerHTML = summary.html;
-        menuView.classList.add('hidden');
-        formView.classList.remove('hidden');
-        clearMessage();
-    }
-
-    function showMenu() {
-        formView.classList.add('hidden');
-        menuView.classList.remove('hidden');
-        clearMessage();
-    }
-
-    // --- Submission Logic ---
-
-    document.getElementById('order-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const submitButton = document.getElementById('submit-button');
-        const summary = generateOrderSummary();
-
-        const payload = {
-            customerName: form.elements['name'].value,
-            customerContact: form.elements['contact'].value,
-            tableNumber: form.elements['table'].value,       
-            order: summary.text, // Text format for spreadsheet
-            totalBill: summary.total // Total calculated amount
-        };
-        
-        submitButton.disabled = true;
-        submitButton.textContent = 'Sending to Kitchen...';
-        clearMessage();
-
-        try {
-            const maxRetries = 3;
-            let attempt = 0;
-            let response = null;
-
-            while (attempt < maxRetries) {
+        /**
+         * Generic fetch function with exponential backoff for retries.
+         */
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            for (let i = 0; i < maxRetries; i++) {
                 try {
-                    response = await fetch(N8N_WEBHOOK_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-
-                    // Assume successful connection on non-network error
-                    break; 
-
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
                 } catch (error) {
-                    attempt++;
-                    console.error(`Attempt ${attempt} failed:`, error); // Log internal error
-                    if (attempt >= maxRetries) { throw error; } 
-                    const delay = Math.pow(2, attempt) * 1000; 
+                    // Log network error for debugging but do not rethrow immediately
+                    console.warn(`Attempt ${i + 1} failed: ${error.message}`);
+                }
+
+                if (i < maxRetries - 1) {
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s delay
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
-
-            // Check if a response object was received from the server (Success Path)
-            if (response) {
-                showMessage('✅ **Order Placed Successfully!** Your order is being processed by the kitchen.', 'success');
-                
-                // Reset UI after success
-                setTimeout(() => {
-                    form.reset();
-                    document.querySelectorAll('.dish-card.active-order').forEach(item => item.classList.remove('active-order'));
-                    document.querySelectorAll('[id^="qty-"]').forEach(span => span.textContent = '0');
-                    selectedItems = {};
-                    updateSelectionState();
-                    showMenu();
-                }, 3000); 
-
-            } else {
-                // If maxRetries failed to get *any* response (Hard Fail Path)
-                // Log the issue but do NOT display an intrusive message to the user.
-                console.error('Hard Fail: Order submission failed after all retries. No response received from server.');
-                // Optionally show a non-intrusive message, but for this request, we keep it quiet.
-                // showMessage('Order failed. Please call the waiter.', 'error');
-            }
-
-        } catch (error) {
-            // Catches errors thrown by the retry logic (network errors)
-            console.error('Final Submission Error (Network/CORS):', error);
-            // Do NOT show message box on fatal error, just log.
-        } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = 'Confirm & Place Order';
+            throw new Error("All fetch attempts failed.");
         }
-    });
 
-    // Initialize minus buttons as disabled (per-dish)
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.dish-card').forEach(card => {
-            const minus = card.querySelector('.qty-button');
-            if (minus) minus.disabled = true;
-        });
-    });
-</script>
 
+        function showConfirmationScreen(tableNumber) {
+            // Reset cart and customer details for a new order
+            cart = {};
+            customerDetails = { name: '', contact: '', tableNumber: '', instructions: '' };
+            currentCategory = 'Starter';
+
+            const html = `
+                <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
+                    <!-- Static Green Tick Icon (SVG) - Now with bounce animation -->
+                    <svg class="w-24 h-24 text-green-500 mx-auto mb-4" 
+                         style="animation: bounce-in 0.5s ease-out 1;"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    
+                    <h1 class="text-4xl font-extrabold text-green-600 mt-2 font-['Poppins']">Order Confirmed!</h1>
+                    <p class="text-xl text-gray-700 mt-2 mb-8 font-['Poppins']">
+                        Successfully Placed for Table #${tableNumber}.
+                    </p>
+                    <div class="bg-yellow-100 text-yellow-800 p-3 rounded-xl max-w-xs mb-8 text-sm">
+                        The kitchen is preparing your delicious meal now.
+                    </div>
+                    <button onclick="showWelcomeScreen()" class="py-3 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg transform transition duration-150 font-['Poppins']">
+                        Start New Order
+                    </button>
+                </div>
+            `;
+            renderScreen(html);
+        }
+
+        function showErrorScreen(message) {
+            const html = `
+                <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
+                    <svg class="w-20 h-20 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h1 class="text-3xl font-extrabold text-red-600 mt-2 font-['Poppins']">Order Failed</h1>
+                    <p class="text-md text-gray-700 mt-4 mb-6">
+                        There was an issue processing your order. Please try again.
+                    </p>
+                    <p class="text-sm text-gray-500 mb-8 max-w-xs">${message}</p>
+
+                    <button onclick="showDetailsScreen()" class="py-3 px-8 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-lg transform transition duration-150 font-['Poppins']">
+                        Go Back and Retry
+                    </button>
+                </div>
+            `;
+            renderScreen(html);
+        }
+
+        // --- Initialization ---
+        window.onload = showWelcomeScreen;
+
+    </script>
 </body>
 </html>
