@@ -124,27 +124,107 @@
         const WEBHOOK_URL = 'https://borsekaushal.app.n8n.cloud/webhook/Menu'; // UPDATED WEBHOOK URL
         const HOTEL_NAME = 'Raju da dhabba';
 
-        // --- Mock Menu Data ---
+        // --- Menu Data (All items now use GitHub Raw links) ---
+        
+        const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/kaushalborse38-maker/helpmeorder/main/";
+
         const menu = {
             Starter: [
-                { id: 101, name: "Paneer Tikka", price: 280, description: "Smoky cottage cheese cubes" },
-                { id: 102, name: "Crispy Corn", price: 220, description: "Fried corn kernels with spices" },
-                { id: 103, name: "Veg. Spring Rolls", price: 180, description: "Crispy veggie rolls" },
+                { 
+                    id: 101, 
+                    name: "Paneer Tikka", 
+                    price: 280, 
+                    description: "Smoky cottage cheese cubes", 
+                    image: GITHUB_RAW_BASE + "Paneer%20Tikka.jpeg" 
+                },
+                { 
+                    id: 102, 
+                    name: "Crispy Corn", 
+                    price: 220, 
+                    description: "Fried corn kernels with spices", 
+                    image: GITHUB_RAW_BASE + "Crispy%20Corn.jpeg" 
+                },
+                { 
+                    id: 103, 
+                    name: "Veg. Spring Rolls", 
+                    price: 180, 
+                    description: "Crispy veggie rolls", 
+                    image: GITHUB_RAW_BASE + "download.jpeg" 
+                },
             ],
             Maincourse: [
-                { id: 201, name: "Dal Makhani", price: 350, description: "Creamy black lentil curry" },
-                { id: 202, name: "Shahi Paneer", price: 420, description: "Royal cottage cheese preparation" },
-                { id: 203, name: "Butter Naan", price: 70, description: "Leavened flatbread with butter" },
-                { id: 204, name: "Jeera Rice", price: 150, description: "Rice tempered with cumin" },
+                { 
+                    id: 201, 
+                    name: "Dal Makhani", 
+                    price: 350, 
+                    description: "Creamy black lentil curry", 
+                    image: GITHUB_RAW_BASE + "Dal%20Makhani.jpeg" 
+                },
+                { 
+                    id: 202, 
+                    name: "Shahi Paneer", 
+                    price: 420, 
+                    description: "Royal cottage cheese preparation", 
+                    image: GITHUB_RAW_BASE + "Shahi%20Paneer.jpeg" 
+                },
+                { 
+                    id: 203, 
+                    name: "Butter Naan", 
+                    price: 70, 
+                    description: "Leavened flatbread with butter", 
+                    image: GITHUB_RAW_BASE + "Butter%20Naan.jpeg" 
+                },
+                { 
+                    id: 204, 
+                    name: "Jeera Rice", 
+                    price: 150, 
+                    description: "Rice tempered with cumin", 
+                    image: GITHUB_RAW_BASE + "Jeera%20Rice.jpeg" 
+                },
             ],
             Drinks: [
-                { id: 301, name: "Masala Chaas", price: 90, description: "Spiced buttermilk" },
-                { id: 302, name: "Fresh Lime Soda", price: 120, description: "Sweet/Salty refreshing drink" },
-                { id: 303, name: "Water Bottle", price: 40, description: "1 litre mineral water" },
+                { 
+                    id: 301, 
+                    name: "Masala Chaas", 
+                    price: 90, 
+                    description: "Spiced buttermilk", 
+                    // UPDATED: Masala Chaas Image URL
+                    image: GITHUB_RAW_BASE + "Masala%20Chaas.jpeg" 
+                },
+                { 
+                    id: 302, 
+                    name: "Fresh Lime Soda", 
+                    price: 120, 
+                    description: "Sweet/Salty refreshing drink", 
+                    // UPDATED: Fresh Lime Soda Image URL
+                    image: GITHUB_RAW_BASE + "Fresh%20Lime%20Soda.jpeg" 
+                },
+                { 
+                    id: 303, 
+                    name: "Water Bottle", 
+                    price: 40, 
+                    description: "1 litre mineral water", 
+                    // UPDATED: Water Bottle Image URL
+                    image: GITHUB_RAW_BASE + "Water%20Bottle.jpeg" 
+                },
             ],
             Sweet: [
-                { id: 401, name: "Gulab Jamun (2pcs)", price: 150, description: "Deep-fried milk solids in sugar syrup" },
-                { id: 402, name: "Gajar Halwa", price: 200, description: "Carrot pudding" },
+                { 
+                    id: 401, 
+                    name: "Gulab Jamun (2pcs)", 
+                    price: 150, 
+                    description: "Deep-fried milk solids in sugar syrup", 
+                    // UPDATED: Gulab Jamun Image URL
+                    image: GITHUB_RAW_BASE + "Gulab%20Jamun%20(2pcs).jpeg" 
+                },
+                { 
+                    id: 402, 
+                    name: "Gajar Halwa", 
+                    price: 200, 
+                    description: "Carrot pudding", 
+                    // UPDATED: Gajar Halwa Image URL
+                    image: GITHUB_RAW_BASE + "Gajar%20Halwa.jpeg" 
+                },
             ],
         };
 
@@ -226,13 +306,24 @@
         function showMenuScreen() {
             // Apply animation-delay for staggered fade-in effect
             const menuHtml = menu[currentCategory].map((item, index) => `
-                <div class="item-container flex justify-between items-center p-4 hover:bg-gray-50 transition duration-100 menu-item-animate" style="animation-delay: ${index * 0.05}s;">
+                <div class="item-container flex items-center p-4 hover:bg-gray-50 transition duration-100 menu-item-animate" style="animation-delay: ${index * 0.05}s;">
+                    
+                    <!-- Item Image on the Left (Uses the image URL or Base64 data) -->
+                    <div class="flex-shrink-0 mr-4">
+                        <img src="${item.image}" alt="${item.name}" 
+                             class="w-16 h-16 object-cover rounded-lg shadow-md border border-gray-100" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/64x64/E5E7EB/9CA3AF?text=Food'" />
+                    </div>
+
+                    <!-- Item Details in the Center -->
                     <div class="flex-1 min-w-0 pr-3">
                         <p class="text-lg font-semibold text-gray-800 truncate">${item.name}</p>
                         <p class="text-sm text-gray-500 truncate">${item.description}</p>
                         <p class="text-base font-bold text-green-600">₹${item.price}</p>
                     </div>
-                    <div class="flex items-center space-x-2 border border-gray-300 rounded-full">
+
+                    <!-- Quantity Controls on the Right -->
+                    <div class="flex items-center space-x-2 border border-gray-300 rounded-full flex-shrink-0">
                         <!-- Decrement Button -->
                         <button onclick="updateQuantity(${item.id}, -1)" 
                                 class="quantity-btn w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold text-red-500 shadow-sm active:shadow-none">
@@ -497,8 +588,8 @@
                 <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
                     <!-- Static Green Tick Icon (SVG) - Now with bounce animation -->
                     <svg class="w-24 h-24 text-green-500 mx-auto mb-4" 
-                         style="animation: bounce-in 0.5s ease-out 1;"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            style="animation: bounce-in 0.5s ease-out 1;"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     
