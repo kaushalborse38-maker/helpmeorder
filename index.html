@@ -11,15 +11,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Lottie Player is now only necessary if the loading animation used Lottie, but we will remove it for cleaner code -->
-    <!-- Keeping the script tag just in case future edits use it, but the loading screen itself will use CSS -->
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     
     <style>
         /* Custom styles for mobile-first design */
         body {
-            font-family: 'Inter', sans-serif; /* Default body font */
-            background-color: #f7f3e8; /* Light, dhabha-like background */
+            font-family: 'Inter', sans-serif; 
+            background-color: #f7f3e8; 
             min-height: 100vh;
         }
         #app {
@@ -33,8 +31,6 @@
         }
         
         /* --- Gradients and Animations --- */
-        
-        /* Define pulse animation for CTA */
         @keyframes pulse-once {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(49, 46, 129, 0.4); }
             70% { transform: scale(1.02); box-shadow: 0 0 0 15px rgba(49, 46, 129, 0); }
@@ -45,14 +41,12 @@
             animation: pulse-once 1.5s ease-out 1;
         }
 
-        /* Define bounce-in animation for confirmation checkmark */
         @keyframes bounce-in {
             0% { transform: scale(0.5); opacity: 0; }
             60% { transform: scale(1.1); opacity: 1; }
             100% { transform: scale(1); }
         }
 
-        /* Define spin animation for the loading spinner */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -62,14 +56,12 @@
             height: 50px;
             border: 4px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            border-top-color: #312e81; /* Primary Brand Color */
+            border-top-color: #312e81; 
             animation: spin 1s linear infinite;
         }
 
-        /* Header Gradient Style */
         .header-style {
-            background-color: #312e81; /* Deep Indigo - Primary Brand Color */
-            /* Rich Indigo Gradient */
+            background-color: #312e81; 
             background-image: linear-gradient(to right bottom, #4f46e5, #312e81);
             color: white;
             padding: 1rem 0;
@@ -79,21 +71,18 @@
             border-bottom-left-radius: 1rem;
             border-bottom-right-radius: 1rem;
             letter-spacing: 0.05em;
-            font-family: 'Poppins', sans-serif; /* Poppins for Header */
+            font-family: 'Poppins', sans-serif; 
         }
         
-        /* Menu Item Fade In/Slide Up Animation */
         @keyframes fadeInSlideUp {
             0% { opacity: 0; transform: translateY(10px); }
             100% { opacity: 1; transform: translateY(0); }
         }
         .menu-item-animate {
             animation: fadeInSlideUp 0.3s ease-out;
-            animation-fill-mode: both; /* Keep element visible after animation */
+            animation-fill-mode: both; 
         }
         
-        /* --- General Component Styles --- */
-
         .item-container:not(:last-child) {
             border-bottom: 1px solid #e5e7eb;
         }
@@ -105,7 +94,7 @@
             background-color: #e5e7eb;
         }
         .active-tab {
-            background-color: #312e81; /* Match header color */
+            background-color: #312e81; 
             color: white;
             border-radius: 9999px;
             box-shadow: 0 4px 8px -2px rgb(0 0 0 / 0.2);
@@ -121,11 +110,11 @@
     <script>
         // --- Configuration ---
         const WEBSCREEN_ID = 'app';
-        const WEBHOOK_URL = 'https://borsekaushal.app.n8n.cloud/webhook/Menu'; // UPDATED WEBHOOK URL
+        // UPDATED WEBHOOK URL
+        const WEBHOOK_URL = 'https://n8n.srv1234891.hstgr.cloud/webhook/Menu'; 
         const HOTEL_NAME = 'Raju da dhabba';
 
-        // --- Menu Data (All items now use GitHub Raw links) ---
-        
+        // --- Menu Data ---
         const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/kaushalborse38-maker/helpmeorder/main/";
 
         const menu = {
@@ -188,7 +177,6 @@
                     name: "Masala Chaas", 
                     price: 90, 
                     description: "Spiced buttermilk", 
-                    // UPDATED: Masala Chaas Image URL
                     image: GITHUB_RAW_BASE + "Masala%20Chaas.jpeg" 
                 },
                 { 
@@ -196,7 +184,6 @@
                     name: "Fresh Lime Soda", 
                     price: 120, 
                     description: "Sweet/Salty refreshing drink", 
-                    // UPDATED: Fresh Lime Soda Image URL
                     image: GITHUB_RAW_BASE + "Fresh%20Lime%20Soda.jpeg" 
                 },
                 { 
@@ -204,7 +191,6 @@
                     name: "Water Bottle", 
                     price: 40, 
                     description: "1 litre mineral water", 
-                    // UPDATED: Water Bottle Image URL
                     image: GITHUB_RAW_BASE + "Water%20Bottle.jpeg" 
                 },
             ],
@@ -214,7 +200,6 @@
                     name: "Gulab Jamun (2pcs)", 
                     price: 150, 
                     description: "Deep-fried milk solids in sugar syrup", 
-                    // UPDATED: Gulab Jamun Image URL
                     image: GITHUB_RAW_BASE + "Gulab%20Jamun%20(2pcs).jpeg" 
                 },
                 { 
@@ -222,7 +207,6 @@
                     name: "Gajar Halwa", 
                     price: 200, 
                     description: "Carrot pudding", 
-                    // UPDATED: Gajar Halwa Image URL
                     image: GITHUB_RAW_BASE + "Gajar%20Halwa.jpeg" 
                 },
             ],
@@ -240,24 +224,15 @@
 
         // --- Utility Functions ---
 
-        /**
-         * Renders the current screen content into the main application container.
-         * @param {string} contentHtml - The HTML content to display.
-         */
         function renderScreen(contentHtml) {
             const appElement = document.getElementById(WEBSCREEN_ID);
             appElement.innerHTML = contentHtml;
         }
 
-        /**
-         * Calculates the total price of all items in the cart.
-         * @returns {{total: number, items: Array}} - The total price and a list of ordered items.
-         */
         function calculateTotal() {
             let total = 0;
             const orderedItems = [];
 
-            // Iterate through all categories
             for (const category in menu) {
                 menu[category].forEach(item => {
                     const quantity = cart[item.id] || 0;
@@ -283,7 +258,6 @@
             const html = `
                 <div class="flex-grow flex flex-col justify-center items-center p-8 text-center bg-gray-50">
                     <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm">
-                        <!-- Icon updated to a more defined utensil icon -->
                         <svg class="w-20 h-20 text-orange-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
@@ -304,36 +278,29 @@
         }
 
         function showMenuScreen() {
-            // Apply animation-delay for staggered fade-in effect
             const menuHtml = menu[currentCategory].map((item, index) => `
                 <div class="item-container flex items-center p-4 hover:bg-gray-50 transition duration-100 menu-item-animate" style="animation-delay: ${index * 0.05}s;">
                     
-                    <!-- Item Image on the Left (Uses the image URL or Base64 data) -->
                     <div class="flex-shrink-0 mr-4">
                         <img src="${item.image}" alt="${item.name}" 
                              class="w-16 h-16 object-cover rounded-lg shadow-md border border-gray-100" 
                              onerror="this.onerror=null; this.src='https://placehold.co/64x64/E5E7EB/9CA3AF?text=Food'" />
                     </div>
 
-                    <!-- Item Details in the Center -->
                     <div class="flex-1 min-w-0 pr-3">
                         <p class="text-lg font-semibold text-gray-800 truncate">${item.name}</p>
                         <p class="text-sm text-gray-500 truncate">${item.description}</p>
                         <p class="text-base font-bold text-green-600">₹${item.price}</p>
                     </div>
 
-                    <!-- Quantity Controls on the Right -->
                     <div class="flex items-center space-x-2 border border-gray-300 rounded-full flex-shrink-0">
-                        <!-- Decrement Button -->
                         <button onclick="updateQuantity(${item.id}, -1)" 
                                 class="quantity-btn w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold text-red-500 shadow-sm active:shadow-none">
                             -
                         </button>
-                        <!-- Quantity Display -->
                         <span id="qty-${item.id}" class="w-6 text-center text-gray-800 font-medium text-sm">
                             ${cart[item.id] || 0}
                         </span>
-                        <!-- Increment Button -->
                         <button onclick="updateQuantity(${item.id}, 1)" 
                                 class="quantity-btn w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold text-green-500 shadow-sm active:shadow-none">
                             +
@@ -350,7 +317,6 @@
             `).join('');
 
             const totalInfo = calculateTotal();
-            // Use Orange gradient for the CTA button in the menu footer
             const doneButtonClasses = totalInfo.total > 0 ? 
                 'bg-orange-500 hover:bg-orange-600 shadow-md hover:shadow-lg' : 
                 'bg-gray-400 cursor-not-allowed shadow-none';
@@ -360,17 +326,14 @@
                     <h2 class="text-2xl">${HOTEL_NAME} Menu</h2>
                 </header>
 
-                <!-- Category Tabs -->
                 <div class="sticky top-[4.5rem] z-10 bg-white shadow-md overflow-x-auto p-3 flex space-x-3">
                     ${categoryTabs}
                 </div>
 
-                <!-- Menu List -->
                 <div class="flex-grow overflow-y-auto pb-20">
                     ${menuHtml}
                 </div>
 
-                <!-- Cart Summary Footer -->
                 <footer class="sticky bottom-0 bg-white p-4 shadow-2xl border-t-2 border-gray-100">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-gray-700 font-semibold">Order Total:</span>
@@ -398,13 +361,11 @@
             const newQty = Math.max(0, currentQty + delta);
             cart[itemId] = newQty;
             
-            // Update the display for the specific item
             const qtySpan = document.getElementById(`qty-${itemId}`);
             if (qtySpan) {
                 qtySpan.textContent = newQty;
             }
 
-            // Update the total and button status
             const totalInfo = calculateTotal();
             const totalSpan = document.getElementById('menu-total');
             if (totalSpan) {
@@ -437,7 +398,6 @@
                 </header>
 
                 <div class="p-5 flex-grow overflow-y-auto">
-                    <!-- Order Summary Card -->
                     <div class="bg-white p-4 rounded-xl shadow-lg border-2 border-indigo-100 mb-6">
                         <h3 class="text-xl font-bold text-indigo-700 mb-3 font-['Poppins']">Your Order Summary</h3>
                         <ul class="space-y-1 mb-3">
@@ -449,7 +409,6 @@
                         </div>
                     </div>
 
-                    <!-- Customer Details Form -->
                     <h3 class="text-xl font-bold text-gray-800 mb-4 font-['Poppins']">Your Details</h3>
                     <form id="detailsForm" class="space-y-4">
                         <div>
@@ -488,14 +447,11 @@
         async function submitOrder() {
             const form = document.getElementById('detailsForm');
             
-            // Basic form validation check
             if (!form.checkValidity()) {
-                // Manually trigger validation messages
                 form.reportValidity();
                 return;
             }
 
-            // Collect customer details
             customerDetails = {
                 name: document.getElementById('name').value,
                 contact: document.getElementById('contact').value,
@@ -505,7 +461,6 @@
 
             const orderData = calculateTotal();
 
-            // Construct the payload for the webhook
             const payload = {
                 hotelName: HOTEL_NAME,
                 timestamp: new Date().toISOString(),
@@ -514,10 +469,9 @@
                 grandTotal: orderData.total
             };
 
-            // Show clean CSS loading state (no Lottie player needed for this state)
             document.getElementById(WEBSCREEN_ID).innerHTML = `
                 <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
-                    <div class="spinner mb-6"></div> <!-- Custom CSS Spinner -->
+                    <div class="spinner mb-6"></div> 
                     <p class="text-xl font-semibold text-gray-700 mt-4 font-['Poppins']">Processing Order...</p>
                     <p class="text-gray-500">Sending order data, please wait securely.</p>
                 </div>
@@ -527,26 +481,22 @@
             let errorMessage = '';
 
             try {
-                // 1. Initial attempt
                 const response = await fetchWithRetry(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
-                }, 3); // 3 retries max
+                }, 3);
 
                 if (response.ok) {
                     success = true;
                 } else {
                     errorMessage = `Webhook failed with status: ${response.status} ${response.statusText}`;
-                    console.error(errorMessage);
                 }
             } catch (error) {
                 errorMessage = `Network or fetch error: ${error.message}`;
-                console.error(errorMessage);
             }
 
             if (success) {
-                // PASS the table number to confirmation screen before resetting state
                 const confirmedTableNumber = customerDetails.tableNumber;
                 showConfirmationScreen(confirmedTableNumber);
             } else {
@@ -554,9 +504,6 @@
             }
         }
 
-        /**
-         * Generic fetch function with exponential backoff for retries.
-         */
         async function fetchWithRetry(url, options, maxRetries = 3) {
             for (let i = 0; i < maxRetries; i++) {
                 try {
@@ -565,12 +512,11 @@
                         return response;
                     }
                 } catch (error) {
-                    // Log network error for debugging but do not rethrow immediately
                     console.warn(`Attempt ${i + 1} failed: ${error.message}`);
                 }
 
                 if (i < maxRetries - 1) {
-                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s delay
+                    const delay = Math.pow(2, i) * 1000; 
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -579,14 +525,12 @@
 
 
         function showConfirmationScreen(tableNumber) {
-            // Reset cart and customer details for a new order
             cart = {};
             customerDetails = { name: '', contact: '', tableNumber: '', instructions: '' };
             currentCategory = 'Starter';
 
             const html = `
                 <div class="flex-grow flex flex-col justify-center items-center p-8 text-center">
-                    <!-- Static Green Tick Icon (SVG) - Now with bounce animation -->
                     <svg class="w-24 h-24 text-green-500 mx-auto mb-4" 
                             style="animation: bounce-in 0.5s ease-out 1;"
                             fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -628,7 +572,6 @@
             renderScreen(html);
         }
 
-        // --- Initialization ---
         window.onload = showWelcomeScreen;
 
     </script>
